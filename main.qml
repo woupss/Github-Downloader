@@ -1037,56 +1037,71 @@ Item {
     // =========================================================================
 
     component MarqueeTextField : TextField {
-        id: mCtrl
-        property color normalColor: "black"
-        color: activeFocus ? normalColor : "transparent"
-        clip:  true
-        Layout.preferredHeight: Math.max(40, contentHeight + topPadding + bottomPadding + 14)
-        verticalAlignment: TextInput.AlignVCenter
+    id: mCtrl
+    property color normalColor: "black"
+    color: activeFocus ? normalColor : "transparent"
+    placeholderTextColor: "transparent"   // ✅ natif toujours invisible — mScrollText gère tout
+    clip:  true
+    Layout.preferredHeight: Math.max(40, contentHeight + topPadding + bottomPadding + 14)
+    verticalAlignment: TextInput.AlignVCenter
 
-        Item {
-            id: mContainer
-            anchors.fill:         parent
-            anchors.leftMargin:   mCtrl.leftPadding
-            anchors.rightMargin:  mCtrl.rightPadding
-            anchors.topMargin:    mCtrl.topPadding
-            anchors.bottomMargin: mCtrl.bottomPadding
-            visible: !mCtrl.activeFocus
-            clip:    true
+    background: Rectangle {
+        color:        "transparent"
+        border.color: mCtrl.activeFocus ? Theme.mainColor : "#aaa"
+        border.width: mCtrl.activeFocus ? 2 : 1
+        radius:       4
+    }
 
-            Text {
-                id: mScrollText
-                text:             mCtrl.text
-                font:             mCtrl.font
-                color:            mCtrl.normalColor
-                verticalAlignment: Text.AlignVCenter
-                height:           parent.height
-                x: 0
-                property bool needsScroll:    width > mContainer.width
-                property int  travelDistance: Math.max(0, width - mContainer.width)
+    Item {
+        id: mContainer
+        anchors.fill:         parent
+        // ✅ +2 sur chaque marge — texte strictement à l'intérieur de la bordure
+        anchors.leftMargin:   mCtrl.leftPadding   + 2
+        anchors.rightMargin:  mCtrl.rightPadding  + 2
+        anchors.topMargin:    mCtrl.topPadding    + 2
+        anchors.bottomMargin: mCtrl.bottomPadding + 2
+        visible: !mCtrl.activeFocus
+        clip:    true
 
-                SequentialAnimation on x {
-                    running: mScrollText.needsScroll && mContainer.visible
-                    loops:   Animation.Infinite
-                    PauseAnimation  { duration: 2000 }
-                    NumberAnimation {
-                        to:       -mScrollText.travelDistance
-                        duration: mScrollText.travelDistance > 0
-                                  ? mScrollText.travelDistance * 20 : 0
-                        easing.type: Easing.Linear
-                    }
-                    PauseAnimation  { duration: 1000 }
-                    NumberAnimation {
-                        to:       0
-                        duration: mScrollText.travelDistance > 0
-                                  ? mScrollText.travelDistance * 20 : 0
-                        easing.type: Easing.Linear
-                    }
+        Text {
+            id: mScrollText
+            text: {
+            if (mCtrl.text === "") return mCtrl.placeholderText
+            if (mCtrl.echoMode === TextInput.Password) 
+            return "●".repeat(mCtrl.text.length)
+            return mCtrl.text
+}
+            font:  mCtrl.font
+            color: mCtrl.text !== "" ? mCtrl.normalColor : "#aaa"
+            verticalAlignment: Text.AlignVCenter
+            height: parent.height
+            width:  implicitWidth
+            x: 0
+
+            property bool needsScroll:    width > mContainer.width
+            property int  travelDistance: Math.max(0, width - mContainer.width)
+
+            SequentialAnimation on x {
+                running: mScrollText.needsScroll && mContainer.visible
+                loops:   Animation.Infinite
+                PauseAnimation  { duration: 2000 }
+                NumberAnimation {
+                    to:       -mScrollText.travelDistance
+                    duration: mScrollText.travelDistance > 0
+                              ? mScrollText.travelDistance * 20 : 0
+                    easing.type: Easing.Linear
+                }
+                PauseAnimation  { duration: 1000 }
+                NumberAnimation {
+                    to:       0
+                    duration: mScrollText.travelDistance > 0
+                              ? mScrollText.travelDistance * 20 : 0
+                    easing.type: Easing.Linear
                 }
             }
         }
     }
-
+}
     // =========================================================================
     // 10. DIALOGUE PRINCIPAL
     // =========================================================================
@@ -1128,7 +1143,7 @@ Item {
     useTokenCheckbox.checked = false
     tokenInput.text          = ""
 
-    // ── UI liste / statut ─────────────────────────
+    // ── UI liste / statut ────────────────────────
     fileListModel.clear()
     selectAllChk.checked  = false
     radioAll.checked      = true
@@ -1345,22 +1360,24 @@ Item {
 
         // ── ContentItem personnalisé : marquee + saisie ───────────────────
         contentItem: Item {
+            clip: true
     implicitHeight: 26
 
     Item {
-        id:     ownerClip
-        clip:   true
-        anchors.left:           parent.left
-        anchors.right:          parent.right
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin:     8
-        anchors.rightMargin:    2
-        height: ownerMarqueeText.height
+    id:     ownerClip
+    clip:   true
+    anchors.left:           parent.left
+    anchors.right:          parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    anchors.leftMargin:     8
+    anchors.rightMargin:    2
+    height: parent.height - 4
 
         Text {
             id:             ownerMarqueeText
             x:              0
-            // ✅ Masqué pendant la saisie — TextInput prend le relais
+            height:         parent.height
+// ✅ Masqué pendant la saisie — TextInput prend le relais
             visible:        !ownerTextInput.activeFocus
             text:           ownerCombo.editText !== ""
                             ? ownerCombo.editText
@@ -1439,7 +1456,7 @@ Item {
                             id: repoInput
                             visible: destMode === "project"
                             placeholderText: tr("PH_REPO")
-                            selectByMouse:   true
+                            selectByMouse: true
                             Layout.fillWidth: true
                             Layout.bottomMargin: 5
                             inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
@@ -1458,8 +1475,8 @@ Item {
                          model: []
                          displayText: editText
                          Layout.preferredWidth: 170   // ajuster selon besoin
-                         Layout.fillWidth: false
-                         Layout.topMargin: 10
+                         Layout.fillWidth: true
+                         Layout.topMargin: 9
                          Layout.preferredHeight: Math.max(40, implicitContentHeight + topPadding + bottomPadding + 14)
                          enabled: pluginState !== "exploring" && pluginState !== "downloading"
     onEditTextChanged: {
@@ -1473,22 +1490,24 @@ Item {
 
     // ── ContentItem personnalisé : TextField avec marquee sur le texte affiché ──
     contentItem: Item {
+        clip: true
     implicitHeight: 26
 
     Item {
-        id:     repoClip
-        clip:   true
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin:     8
-        anchors.rightMargin:    2
-        height: repoMarqueeText.height
+    id:     repoClip
+    clip:   true
+    anchors.left:           parent.left
+    anchors.right:          parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    anchors.leftMargin:     8
+    anchors.rightMargin:    2
+    height: parent.height - 4
 
         Text {
             id: repoMarqueeText
             x:              0
-            // ✅ Masqué pendant la saisie — TextInput prend le relais
+            height:         parent.height
+// ✅ Masqué pendant la saisie — TextInput prend le relais
             visible: !repoTextInput.activeFocus
             text: repoCombo.editText !== ""
     ? repoCombo.editText : tr("PH_REPO")
@@ -1583,15 +1602,18 @@ property int  travelDistance: Math.max(0, implicitWidth - repoClip.width)
                         MarqueeTextField {
                             id: folderInput
                             placeholderText: tr("PH_FOLDER")
+                            //verticalAlignment: TextInput.AlignVCenter
                             selectByMouse:   true
                             Layout.fillWidth: true
+                            //Layout.preferredHeight: 49
+                            
                             inputMethodHints: Qt.ImhNoPredictiveText
                             enabled: pluginState !== "exploring" && pluginState !== "downloading"
                         }
                     }
                 }
 
-                // ── TOKEN CHECKBOX ─────────────────────────────────────────
+                // ── TOKEN CHECKBOX ───��──────────����─────���─────────────────��──
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 6
@@ -1619,16 +1641,16 @@ property int  travelDistance: Math.max(0, implicitWidth - repoClip.width)
 
                 // ── TOKEN INPUT (masqué, sans correction auto) ─────────────
                 MarqueeTextField {
-                    id: tokenInput
-                    visible:         useTokenCheckbox.checked
-                    placeholderText: tr("PH_TOKEN")
-                    echoMode:        TextInput.Password
-                    selectByMouse:   true
-                    Layout.fillWidth: true
-                    inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
-                                    | Qt.ImhSensitiveData | Qt.ImhNoAutoCorrect
-                    enabled: pluginState !== "exploring" && pluginState !== "downloading"
-                }
+    id: tokenInput
+    visible:         useTokenCheckbox.checked
+    placeholderText: tr("PH_TOKEN")
+    echoMode:        activeFocus ? TextInput.Normal : TextInput.Password   // ← MODIFIER
+    selectByMouse:   true
+    Layout.fillWidth: true
+    inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
+                    | Qt.ImhSensitiveData | Qt.ImhNoAutoCorrect
+    enabled: pluginState !== "exploring" && pluginState !== "downloading"
+}
 
                 // ── BOUTON EXPLORER ────────────────────────────────────────
                 Button {
