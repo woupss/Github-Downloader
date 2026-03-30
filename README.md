@@ -1,4 +1,4 @@
-dStore your project on github and download it or download your plugins or any plugins from public repo.
+Store your project on github and download it or download your plugins or any plugins from public repo.
 
 it will clone all your repo or if you want you can choose wich files/folders to download.
 
