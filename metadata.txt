@@ -1,7 +1,7 @@
 [general]
-name=Github Downloader
-description= Store your project on github and download it or download your plugins.
+name=GithubManager
+description= Store your project on github and download it or download/update plugins.
 author=woups
 icon=icon.svg
-version=0.3
-homepage=https://github.com/woupss/Github-Downloader
+version=0.1
+homepage=https://github.com/woupss/Github-Manager
