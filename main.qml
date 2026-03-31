@@ -303,7 +303,7 @@ Item {
 
     QfToolButton {
         id: toolBtn
-        iconSource: 'icon.png'
+        iconSource: 'icon.svg'
         iconColor: Theme.mainColor
         bgcolor: Theme.darkGray
         round: true

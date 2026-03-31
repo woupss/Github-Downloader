@@ -2,6 +2,6 @@
 name=Github Downloader
 description= Store your project on github and download it or download/update plugins.
 author=woups
-icon=icon.png
-version=0.4
+icon=icon.svg
+version=0.5
 homepage=https://github.com/woupss/Github-Downloader
