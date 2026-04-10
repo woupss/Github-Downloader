@@ -181,6 +181,7 @@ Item {
             STATUS_DL:        "Téléchargement",
             STATUS_DONE:      "✅  Téléchargement terminé !",
             INFO_DONE:        "Le projet est prêt. Cliquez sur « Ouvrir le projet ».",
+            INFO_DONE_PLUGIN: "Le plugin est prêt. Vous pouvez l'activer depuis les paramètres.",
             ERR_FIELDS:       "Remplissez : auteur, dépôt et dossier de destination.",
             ERR_404:          "Dépôt introuvable (404). Vérifiez l'auteur et le nom.",
             ERR_401:          "Accès refusé (401). Dépôt privé — utilisez un token.",
@@ -227,6 +228,7 @@ Item {
             STATUS_DL:        "Downloading",
             STATUS_DONE:      "✅  Download complete!",
             INFO_DONE:        "Project ready. Click 'Open project'.",
+            INFO_DONE_PLUGIN: "Plugin ready. You can enable it from the settings.",
             ERR_FIELDS:       "Please fill in: author, repository and destination folder.",
             ERR_404:          "Repository not found (404). Check author and repo name.",
             ERR_401:          "Access denied (401). Private repo — use a GitHub token.",
@@ -283,7 +285,8 @@ Item {
         "error":              { "en": "❌ Error: ",                    "fr": "❌ Erreur : " },
         "installed":          { "en": "✔ Installed",                   "fr": "✔ Installé" },
         "restart":            { "en": "\nRestart recommended.",        "fr": "\nRedémarrage recommandé." },
-        "Refresh the list of plugins to update":       { "en": "🔄  Refresh the list of plugins to update",          "fr": "🔄  Actualiser la liste des plugin à mettre à jour" }
+        "Refresh the list of plugins to update":       { "en": "🔄  Refresh the list of plugins to update",          "fr": "🔄  Actualiser la liste des plugin à mettre à jour" },
+        "plugin_updated": { "en": "The plugin has been updated.", "fr": "Le plugin a été mis à jour." }
     })
 
     function upTr(key) {
@@ -807,7 +810,7 @@ Item {
         pluginState      = "done"
         statusText.text  = tr("STATUS_DONE")
         statusText.color = "#80cc28"
-        infoText.text    = tr("INFO_DONE")
+        infoText.text    = (destMode === "plugin") ? tr("INFO_DONE_PLUGIN") : tr("INFO_DONE")
     }
 
     function findRootProjectFile() {
@@ -1166,7 +1169,7 @@ Item {
             if (error && error !== "") { upStatusText.text = upTr("error") + error; upStatusText.color = "red" }
             else {
                 upIsFinished = true
-                var successMsg = upTr("installed")
+                var successMsg = upTr("plugin_updated")
                 if (upDetectedVersion !== "") successMsg += " " + upDetectedVersion
                 upStatusText.text  = successMsg
                 upStatusText.color = "green"
