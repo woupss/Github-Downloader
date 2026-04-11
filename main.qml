@@ -384,9 +384,21 @@ Item {
                 return root.substring(0, markerIdx) + markers[m] + folder
             }
         }
+        var androidIdx = root.indexOf("/Android/data/")
+        if (androidIdx >= 0) {
+            var filesIdx = root.indexOf("/files/", androidIdx)
+            if (filesIdx >= 0) {
+                var androidBase = root.substring(0, filesIdx + 7)
+                if (destMode === "plugin")
+                    return androidBase + "QField/plugins/" + folder
+                return androidBase + "Imported Projects/" + folder
+            }
+        }
+        var parentIdx = root.lastIndexOf("/")
+        var parentPath = (parentIdx > 0) ? root.substring(0, parentIdx) : root
         if (destMode === "plugin")
-            return "/storage/emulated/0/Android/data/ch.opengis.qfield_dev/files/QField/plugins/" + folder
-        return "/storage/emulated/0/Android/data/ch.opengis.qfield_dev/files/Imported Projects/" + folder
+            return parentPath + "/QField/plugins/" + folder
+        return parentPath + "/Imported Projects/" + folder
     }
 
     function buildDestPath(subFolder, fileName) {
